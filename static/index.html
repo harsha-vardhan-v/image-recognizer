@@ -8,25 +8,43 @@
 </head>
 <body>
     <form>
-        <input type="text" id="name-input">
+        <input type="file" id="image">
         <button id="submit">Submit</button>
     </form>
 
-    <p id="greet"></p>
+    <ul id="pred"></ul>
+    <img id='selected' src="" />
 
     <script>
         let form = document.querySelector('form');
-        let input = document.querySelector('#name-input');
-        let p = document.querySelector('#greet');
+        let input = document.querySelector('#image');
+        let img = document.querySelector('#selected');
+        let list = document.querySelector('#pred');
+        let base64img;
+
+        input.addEventListener('change', () => {
+            let reader = new FileReader();
+            reader.onload = () => {
+                let dataURL = reader.result;
+                img.src = dataURL;
+
+                base64img = dataURL.replace('data:image/png;base64,','');
+                console.log(base64img);
+            };
+
+            reader.readAsDataURL(input.files[0]);
+            list.innerHTML = '';
+        });
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
 
             let msg = {
-                name: input.value
+                image: base64img
             };
 
-            let res = await fetch('http://localhost:5000/hello', {
+            console.log(msg);
+            let res = await fetch('http://localhost:5000/predict', {
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json',
@@ -36,8 +54,15 @@
             });
 
             const g = await res.json();
-            p.innerHTML = g.greeting;
+            console.log(g.prediction);
             input.value = '';
+
+            g.prediction.forEach(res => {
+                const li = document.createElement('li');
+                li.innerHTML = `Name: ${res.name} Probability: ${res.prob}`;
+
+                list.appendChild(li);
+            });
         });
     </script>
 </body>
