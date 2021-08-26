@@ -4,101 +4,46 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dc/4.2.7/style/dc.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dc/4.2.7/style/dc.css">
+    <link rel="stylesheet" href="styles/style.css">
     <title>Image Recognizer</title>
 </head>
 <body>
-    <form>
-        <input type="file" id="image">
-        <button id="submit">Submit</button>
-    </form>
-    
-    <div>
-        <div id="row"></div>
-        <div id="pie"></div>
+    <div class="container">
+        <div>
+            <h1>Image Recognizer</h1>
+            <p>Upload a <span class="blue">.png</span> image and our mobile net deeplearning model will tell you the most probable categories for the image!</p>
+        </div>
+
+        <form>
+            <div class="file-field">
+                <div class="z-depth-1-half mb-4">
+                    <img src="https://mdbootstrap.com/img/Photos/Others/placeholder.jpg" id='selected' class="img-fluid" alt="example placeholder">
+                </div>
+
+                <div class="d-flex justify-content-center">
+                    <div class="btn btn-mdb-color btn-rounded float-left">
+                        <input type="file" id="image" class="form-control-file">
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="btn">Submit</button>
+        </form>
+        
+        <div id="plots">
+            <h1 id="predictions"></h1>
+            <div id="pie"></div>
+            <div id="row"></div>
+        </div>
+
+        <script src="https://d3js.org/d3.v7.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/crossfilter/1.3.12/crossfilter.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dc/4.2.7/dc.min.js"></script>
+        
+        <script src="scripts/predict.js"></script>
     </div>
-    <ul id="pred"></ul>
-    <img id='selected' src="" />
-
-    <script src="https://d3js.org/d3.v7.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crossfilter/1.3.12/crossfilter.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dc/4.2.7/dc.min.js"></script>
-    
-    <script>
-        let form = document.querySelector('form');
-        let input = document.querySelector('#image');
-        let img = document.querySelector('#selected');
-        let list = document.querySelector('#pred');
-        let row = document.querySelector('#row');
-        let pie = document.querySelector('#pie');
-        let base64img;
-
-        input.addEventListener('change', () => {
-            let reader = new FileReader();
-            reader.onload = () => {
-                let dataURL = reader.result;
-                img.src = dataURL;
-
-                base64img = dataURL.replace('data:image/png;base64,','');
-            };
-
-            reader.readAsDataURL(input.files[0]);
-            list.innerHTML = '';
-            row.innerHTML = '';
-            pie.innerHTML = '';
-        });
-
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            let msg = {
-                image: base64img
-            };
-
-            console.log(msg);
-            let res = await fetch('http://localhost:5000/predict', {
-                method: 'POST',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(msg)
-            });
-
-            const g = await res.json();
-            input.value = '';
-
-            g.prediction.forEach(res => {
-                const li = document.createElement('li');
-                li.innerHTML = `Name: ${res.name} Probability: ${res.prob}`;
-
-                list.appendChild(li);
-            });
-
-            //Plots
-            let vis = g.prediction.map(pred => {
-                return {
-                    category: pred.name,
-                    value: parseFloat(pred.prob)
-                };
-            });
-
-            let cf = crossfilter(vis);
-            let category = cf.dimension(p => p.category);
-
-            dc.rowChart('#row')
-                .dimension(category)
-                .group(category.group().reduceSum(p => p.value));
-
-            dc.pieChart('#pie')
-                .dimension(category)
-                .group(category.group().reduceSum(p => p.value));
-
-            dc.renderAll();
-        });
-    </script>
 </body>
 </html>

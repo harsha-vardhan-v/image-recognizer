@@ -1,0 +1,47 @@
+body{
+    padding: 2%;
+}
+
+h1{
+    text-align: center;
+    color: #3182bd;
+    margin-bottom: 1em;
+}
+
+p{
+    opacity: 0.7;
+    text-align: center;
+}
+
+.blue{
+    color: #3182bd;
+}
+
+form{
+    padding: 2em 0;
+    text-align: center;
+}
+
+img{
+    width: 300px;
+    height: 200px;
+    object-fit: cover;
+}
+
+button[type="submit"]{
+    margin-top: 50px;
+    background-color: #3182bd;
+    color: white;
+}
+
+div#plots{
+    margin-top: 4em;
+}
+
+div#pie{
+    margin-bottom: 2em;
+}
+
+h1#predictions{
+    margin-bottom: 1.5em;
+}
